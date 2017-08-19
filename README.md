@@ -1,4 +1,4 @@
-# velmex-matlab-interface
+# velmex-stage-control
 A MATLAB class to control the Velmex motorized stages using serial communications
 
 The VMX class is meant to abstract away the serial communications protocol used to control the Velmex linear and rotary motorized stages.
