@@ -1,7 +1,7 @@
 # velmex-stage-control
 A MATLAB class to control the Velmex motorized stages using serial communications
 
-The VMX class is meant to abstract away the serial communications protocol used to control the Velmex linear and rotary motorized stages.
+The serialport_VMX class is meant to abstract away the serial communications protocol used to control the Velmex linear and rotary motorized stages.
 Arranging the commands and structures into a single class has two advantages: 1) Code is reused efficiently and 2) Only one object can have an open serial port to the motor controller which is consolidated in this class.
 A consequence of the design of this class is that all stages *must* be controlled through a single instance of this class. Attempting to create multiple instances will fail as only one instance is permitted to open a serial port.
 
@@ -12,8 +12,8 @@ The current commands are limited to setting the motor speed and moving the stage
 ## Class contents
 
 Examples in this readme will use the following syntax:  
-`stage = VMX(11,1000,1,2,3)`  
-where `stage` is an instance of the `VMX` class.
+`stage = serialport_VMX(11,1000,1,2,3)`  
+where `stage` is an instance of the `serialport_VMX` class.
 
 ### Properties
 The public properties of the class are 
@@ -35,6 +35,7 @@ The motor response can generally be ignored and is meant for debugging if the st
 
 There are two private properties, `baud` and `motorsPresent`.
 The baud is set to a default speed of 9600 as the communication speed is rarely a bottleneck in operation.
+With Velmex' VXC Controller, a baud rate of 57600 is default. With this change made, the class works as it does with a VMX unit. 
 In the unlikely event that higher speeds are needed, refer to page 13 of the users manual.
 `motorsPresent` is used internally and should not be modified.
 
@@ -67,7 +68,7 @@ After maneuvering the stages into their starting position, the displacements may
 ### Public Methods
 The Public methods are:
 
-* `obj = VMX(portNum,motorSpeed,xNum,yNum,thetaNum,zNum)`
+* `obj = serialport_VMX(portNum,motorSpeed,xNum,yNum,thetaNum,zNum)`
 * `setSpeed(obj)`
 * `moveMotorRelative(obj,motorToMove,moveAmount)`
 * `moveMotorAbsolute(obj,motorToMove,position)`
@@ -75,7 +76,7 @@ The Public methods are:
 * `toggleUnits(obj,axisToToggle)`
 * `delete(obj)`
 
-`obj = VMX(portNum,motorSpeed,xNum,yNum,thetaNum,zNum)` is the class constructor and is crucial to using this class effectively. Not all variables are required. If access is needed to variables following an unnecessary parameter pass an empty variable `[]`.  
+`obj = serialport_VMX(portNum,motorSpeed,xNum,yNum,thetaNum,zNum)` is the class constructor and is crucial to using this class effectively. Not all variables are required. If access is needed to variables following an unnecessary parameter pass an empty variable `[]`.  
 `portNum` is the COM port used to communicate with the motor controller. This value is REQUIRED.  
 `motorSpeed` is the number of steps per second the motor will turn. The default value is 1000 and is set for _all_ of the motors that are initialized during construction. This value is OPTIONAL.  
 `xNum`, `yNum`, `thetaNum`, and `zNum` are the motor numbers for each stage as the are connected to the motor controller. This is NOT the desired numbering system and care must be taken when supplying these values. E.g. stage 1 is the stage connected using the plugs with a 1 written on the side of the connectors. If an axis is not used pass an empty variable `[]`. You may also omit trailing arguments if the axis will not be used. This value is OPTIONAL _but_ all axis must be declared during construction if they are to be used.
@@ -115,12 +116,12 @@ The protected methods are used to format the output of the information displayed
 
 ### Static (and private) Methods
 
-`motor = createEmptyStruct(movementAxis,motorNumber)` is a static method used to instantiate the structure used to store parameters for each axis being controlled. This method ensures uniform structure field names and automatically provides the units and conversion factors for linear and rotary stages based on the axis name (`x`,`y`, and `z` are linear while `theta` is rotary). The method is called by the `VMX` constructor during initialization.
+`motor = createEmptyStruct(movementAxis,motorNumber)` is a static method used to instantiate the structure used to store parameters for each axis being controlled. This method ensures uniform structure field names and automatically provides the units and conversion factors for linear and rotary stages based on the axis name (`x`,`y`, and `z` are linear while `theta` is rotary). The method is called by the `serialport_VMX` constructor during initialization.
 
 
 ## Example usage
 
-Examples are provided to illustrate the usage of the `VMX` class. The first case involves using a linear stage in the x-axis and a rotary stage. The second case involves a y-z-theta configuration. The use cases are hypothetical and movement patterns are kept simple.
+Examples are provided to illustrate the usage of the `serialport_VMX` class. The first case involves using a linear stage in the x-axis and a rotary stage. The second case involves a y-z-theta configuration. The use cases are hypothetical and movement patterns are kept simple.
 
 In both cases, the motor controller will connect using COM port 11.
 
@@ -129,7 +130,7 @@ In this case, the linear stage will be moved into a starting position and reset.
 
 ```matlab
 % position stages
-stage = VMX(11,1000,2,[],1); % linear stage is connected using cable 2, rotary with cable 1
+stage = serialport_VMX(11,1000,2,[],1); % linear stage is connected using cable 2, rotary with cable 1
 stage.moveMotorRelative('x',12); % move linear stage 12 mm away from the motor
 stage.setCurrentPositionAsHome('x'); % the x axis is in the correct starting position, reset to zero
 stage.toggleUnits('theta'); % toggle the rotation units to radians
@@ -161,7 +162,7 @@ without passing the name of the axis as a string.
 In this case, the linear stages will be used in inches. The rotary stage will have to initially rotate 60 degrees. The speed of the linear stages will be set to 500 steps per second. The stages will complete a square rotating 90 degrees at each corner. After visual inspection, it is determined that the y, z, and theta stages are connected with the 1, 2, and 3 cables respectively.
 
 ```matlab
-stage = VMX(11,1000,[],1,3,2); % order is port, speed for all motors, x number, y number, theta number, and z number
+stage = serialport_VMX(11,1000,[],1,3,2); % order is port, speed for all motors, x number, y number, theta number, and z number
 stage.toggleUnits('y'); % toggle to inches
 stage.toggleUnits('z'); % toggle to inches
 stage.moveMotorRelative('theta',60);
