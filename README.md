@@ -3,7 +3,8 @@ A MATLAB class to control the Velmex motorized stages using serial communication
 
 The serialport_VMX class is meant to abstract away the serial communications protocol used to control the Velmex linear and rotary motorized stages.
 Arranging the commands and structures into a single class has two advantages: 1) Code is reused efficiently and 2) Only one object can have an open serial port to the motor controller which is consolidated in this class.
-A consequence of the design of this class is that all stages *must* be controlled through a single instance of this class. Attempting to create multiple instances will fail as only one instance is permitted to open a serial port.
+A consequence of the design of this class is that all stages *must* be controlled through a single instance of this class. Attempting to create multiple instances through a *single serial port* will fail as only one instance is permitted to open a serial port.
+Multiple stage controllers can be controlled at once by creating multiple classes of different names, e.g. `serialport_VMX_1,` `serialport_VMX_2` ... etc.
 
 The current commands are limited to setting the motor speed and moving the stages at a constant velocity. For additional commands and alternate programming options refer to the user manual included in this repository.
 
